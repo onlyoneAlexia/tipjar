@@ -15,13 +15,22 @@ tipjar/
 ## Try it locally in 60 seconds
 
 ```bash
-cd web
-cp .env.example .env       # already points at the live contract
-npm install
-npm run dev                # → http://localhost:5173
+cp web/.env.example web/.env       # already points at the live contract
+npm run install:all                # installs web dependencies
+npm run dev                        # → http://127.0.0.1:5173
 ```
 
 Connect MetaMask / Coinbase Wallet / Rabby, switch to Base Sepolia, drop a tip.
+
+### Available commands (run from repo root)
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Start the Vite dev server on http://127.0.0.1:5173 |
+| `npm run build` | Build the frontend to `web/dist/` |
+| `npm run preview` | Preview the production build |
+| `npm run lint` | Lint the frontend |
+| `npm test` | Run the Foundry contract tests |
 
 ## Deploy your own jar
 

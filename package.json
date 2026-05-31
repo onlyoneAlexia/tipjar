@@ -1,0 +1,14 @@
+{
+  "name": "tipjar",
+  "private": true,
+  "description": "On-chain tip jar on Base Sepolia. Foundry contract + Vite/wagmi frontend.",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npm --prefix web run dev",
+    "build": "npm --prefix web run build",
+    "preview": "npm --prefix web run preview",
+    "lint": "npm --prefix web run lint",
+    "install:all": "npm --prefix web install",
+    "test": "forge test --root contracts"
+  }
+}
