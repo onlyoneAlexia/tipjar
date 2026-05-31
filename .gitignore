@@ -1,0 +1,31 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.swo
+
+# Local env (always ignore at any depth — never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+
+# Vite / build output
+dist/
+dist-ssr/
+
+# Foundry
+out/
+cache/
+broadcast/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
