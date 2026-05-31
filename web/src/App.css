@@ -242,10 +242,21 @@ body::before {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-family: inherit;
-  transition: transform 80ms, background 160ms, box-shadow 200ms, color 160ms;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1), background 160ms, box-shadow 200ms, color 160ms;
 }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(218, 226, 107, 0.55); }
+
+/* Lift on capable pointers only; release settles back so the press still reads as a press. */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover:not(:disabled) { transform: translateY(-2px); }
+  .btn:active:not(:disabled) { transform: translateY(0); }
+}
 
 .btn-primary {
   background: linear-gradient(135deg, var(--olive-bright), var(--olive));
@@ -359,3 +370,96 @@ body::before {
   transition: text-shadow 160ms;
 }
 .footer-link:hover { text-shadow: 0 0 12px var(--olive-glow); }
+.footer-link:focus-visible { outline: 2px solid var(--olive-bright); outline-offset: 3px; border-radius: 4px; }
+
+/* ─── Entrance choreography ──────────────────────────────────────────────
+   One-shot reveal on load. transform + opacity only; staggered under 300ms
+   across the primary surfaces so the page assembles rather than pops in. */
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+.topbar,
+.banner,
+.stat,
+.layout .card,
+.footer {
+  animation: reveal 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.banner { animation-delay: 80ms; }
+.stat:nth-child(1) { animation-delay: 120ms; }
+.stat:nth-child(2) { animation-delay: 180ms; }
+.stat:nth-child(3) { animation-delay: 240ms; }
+.layout .card:nth-child(1) { animation-delay: 300ms; }
+.layout .card:nth-child(2) { animation-delay: 370ms; }
+.footer { animation-delay: 440ms; }
+
+/* Feed rows enter from the top of the list; on poll, stable keys mean only a
+   genuinely new tip re-runs this. Inline animation-delay staggers first paint. */
+@keyframes tipIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.tip-row { animation: tipIn 420ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ─── Button feedback ────────────────────────────────────────────────────*/
+.spinner { animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Sweep while the tx mines — communicates ongoing work without a layout shift. */
+.btn-primary[data-loading='true'] { position: relative; overflow: hidden; }
+.btn-primary[data-loading='true']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: shimmer 1.15s ease-in-out infinite;
+}
+@keyframes shimmer { to { transform: translateX(100%); } }
+
+.status-success {
+  border-left-color: var(--olive-bright);
+  color: var(--olive-bright);
+  animation: pop 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.96) translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ─── Coin shower (rare delight on a confirmed tip) ──────────────────────*/
+.burst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 3;
+  border-radius: 22px;
+}
+.coin {
+  position: absolute;
+  top: -24px;
+  width: var(--s, 14px);
+  height: var(--s, 14px);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--olive-bright), var(--olive) 58%, var(--olive-deep));
+  box-shadow: 0 0 10px var(--olive-glow), inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+  opacity: 0;
+  animation: coinFall 1200ms cubic-bezier(0.4, 0, 0.7, 1) forwards;
+}
+@keyframes coinFall {
+  0%   { transform: translateY(-10px) rotate(0deg) scale(0.6); opacity: 0; }
+  12%  { opacity: 1; }
+  100% { transform: translateY(380px) rotate(440deg) scale(1); opacity: 0; }
+}
+
+/* ─── Respect reduced-motion: kill all decorative motion ─────────────────*/
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

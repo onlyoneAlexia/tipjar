@@ -1,0 +1,194 @@
+/* ─── TipJar — warm editorial design system ──────────────────────────────
+   Recoleta (display) is commercial; Fraunces is the free editorial stand-in.
+   Satoshi (UI/body) is free via Fontshare. */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --cream: #f7f3ec;
+  --sand: #ede4d6;
+  --amber: #c99a2e;
+  --terra: #b13a2e;
+  --terra-deep: #9a3026;
+  --charcoal: #1a1a1a;
+  --stone: #7b7268;
+  --paper: #fffdf8;
+  --line: #e7dfd0;
+  --line-strong: #d8ccb8;
+  --terra-tint: rgba(177, 58, 46, 0.08);
+  --amber-tint: rgba(201, 154, 46, 0.16);
+
+  --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --sans: 'Satoshi', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --pad: clamp(16px, 3vw, 34px);
+  --scrim-rgb: 247, 243, 236; /* drives the hero scrim; flips in dark mode */
+}
+
+/* ─── Subtle warm dark mode (espresso, not black) ─────────────────────────*/
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --cream: #17140f;
+  --sand: #221d17;
+  --paper: #1e1a14;
+  --charcoal: #f1e9db;
+  --stone: #a89e8e;
+  --line: #322b22;
+  --line-strong: #423a2e;
+  --terra: #cb5b45;
+  --terra-deep: #b6492f;
+  --amber: #d9ab45;
+  --terra-tint: rgba(203, 91, 69, 0.16);
+  --amber-tint: rgba(217, 171, 69, 0.16);
+  --scrim-rgb: 23, 20, 15;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--cream); }
+
+.lp-app {
+  display: flex; flex-direction: column; min-height: 100dvh;
+  background: var(--cream); color: var(--charcoal);
+  font-family: var(--sans); -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums;
+}
+.lp-app a { color: inherit; text-decoration: none; }
+
+/* On a roomy desktop, fill the viewport: panels scroll internally, the page does not. */
+@media (min-width: 1040px) and (min-height: 700px) {
+  .lp-app { height: 100dvh; overflow: hidden; }
+  .lp-dash { flex: 1; min-height: 0; }
+  .lp-panel { min-height: 0; }
+  .lp-feed-body { overflow: auto; }
+}
+
+/* ─── Nav ─────────────────────────────────────────────────────────────── */
+.lp-nav { display: flex; align-items: center; gap: 16px; padding: 12px var(--pad); border-bottom: 1px solid var(--line); flex: none; }
+.lp-brand-wrap { display: flex; align-items: baseline; gap: 10px; }
+.lp-brand { font-family: var(--serif); font-weight: 600; font-size: 22px; letter-spacing: -0.01em; }
+.lp-brand-sub { font-size: 12.5px; color: var(--stone); }
+.lp-net { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--stone); background: var(--sand); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
+.lp-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--amber); flex: none; }
+.lp-nav-spacer { flex: 1; }
+.lp-theme-toggle { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--line); background: var(--paper); color: var(--charcoal); cursor: pointer; transition: background 160ms ease, color 160ms ease, transform 80ms var(--enter); }
+.lp-theme-toggle svg { width: 18px; height: 18px; }
+.lp-theme-toggle:hover { background: var(--sand); color: var(--terra); }
+.lp-theme-toggle:active { transform: translateY(1px); }
+.lp-theme-toggle:focus-visible { outline: 2px solid var(--terra); outline-offset: 2px; }
+
+.lp-wallet { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; background: var(--paper); font-size: 13px; }
+.lp-wallet .seg { border-right: 1px solid var(--line); }
+.lp-wallet-id { display: inline-flex; align-items: center; gap: 7px; padding: 9px 13px; background: none; border: 0; border-right: 1px solid var(--line); cursor: pointer; font: inherit; color: var(--charcoal); transition: background 160ms ease; }
+.lp-wallet-id:hover { background: var(--sand); }
+.lp-copy { background: none; border: 0; border-right: 1px solid var(--line); cursor: pointer; color: var(--stone); padding: 9px 11px; display: inline-flex; transition: color 160ms ease, background 160ms ease; }
+.lp-copy:hover { color: var(--terra); background: var(--terra-tint); }
+.lp-bal { font-weight: 700; padding: 9px 13px; }
+.lp-wallet-id:focus-visible, .lp-copy:focus-visible { outline: 2px solid var(--terra); outline-offset: -2px; }
+@media (max-width: 720px) { .lp-brand-sub, .lp-net { display: none; } }
+
+/* ─── Hero (full-bleed video) ─────────────────────────────────────────── */
+.lp-hero { position: relative; width: 100%; flex: none; height: clamp(280px, 38vh, 440px); overflow: hidden; background: var(--sand); border-bottom: 1px solid var(--line); display: flex; align-items: center; }
+.lp-hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 28%; }
+:root[data-theme='dark'] .lp-hero video { filter: brightness(0.8) saturate(0.95); }
+/* Scrim — opaque left + bottom + bottom-right corner (hide the web UI baked
+   into the footage); clear upper-right where the physical scene moves. The
+   colour follows --scrim-rgb so it fades to cream (light) or espresso (dark). */
+.lp-hero .scrim {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(150px 140px at 100% 100%, rgb(var(--scrim-rgb)) 0%, rgba(var(--scrim-rgb), 0.6) 46%, rgba(var(--scrim-rgb), 0) 76%),
+    linear-gradient(90deg, rgb(var(--scrim-rgb)) 0%, rgba(var(--scrim-rgb), 0.97) 32%, rgba(var(--scrim-rgb), 0.6) 50%, rgba(var(--scrim-rgb), 0.16) 72%, rgba(var(--scrim-rgb), 0) 100%),
+    linear-gradient(0deg, rgba(var(--scrim-rgb), 0.9) 0%, rgba(var(--scrim-rgb), 0.35) 22%, rgba(var(--scrim-rgb), 0) 46%);
+}
+.lp-hero-inner { position: relative; z-index: 2; padding-left: var(--pad); padding-right: var(--pad); max-width: 620px; }
+.lp-eyebrow { display: inline-flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--line); color: var(--stone); font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 999px; margin-bottom: 16px; }
+.lp-eyebrow .diamond { width: 7px; height: 7px; background: var(--amber); transform: rotate(45deg); }
+.lp-h1 { font-family: var(--serif); font-weight: 500; font-size: clamp(34px, 4.6vw, 60px); line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 12px; }
+.lp-h1 .em { font-style: italic; color: var(--terra); }
+.lp-sub { font-size: clamp(15px, 1.5vw, 18px); color: var(--stone); margin: 0 0 22px; }
+.lp-cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ─── Buttons ─────────────────────────────────────────────────────────── */
+.lp-btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-family: var(--sans); font-weight: 700; font-size: 14.5px; padding: 12px 20px; border-radius: 12px; border: 1px solid transparent; cursor: pointer; transition: transform 140ms var(--enter), background 160ms ease, box-shadow 200ms ease, color 160ms ease, border-color 160ms ease; }
+.lp-btn svg { width: 17px; height: 17px; flex: none; }
+.lp-btn-primary { background: var(--terra); color: #fff; box-shadow: 0 10px 24px -14px rgba(177, 58, 46, 0.8); }
+.lp-btn-primary:hover:not(:disabled) { background: var(--terra-deep); box-shadow: 0 14px 30px -12px rgba(177, 58, 46, 0.85); }
+.lp-btn-ghost { background: var(--paper); color: var(--charcoal); border-color: var(--line-strong); }
+.lp-btn-ghost:hover:not(:disabled) { background: var(--sand); }
+.lp-btn-block { width: 100%; }
+.lp-connect { padding: 10px 16px; }
+@media (hover: hover) and (pointer: fine) { .lp-btn:hover:not(:disabled) { transform: translateY(-2px); } .lp-btn:active:not(:disabled) { transform: translateY(0); } }
+.lp-btn:active { transform: translateY(1px); }
+.lp-btn:focus-visible { outline: 2px solid var(--terra); outline-offset: 2px; }
+.lp-btn:disabled { opacity: 0.55; cursor: not-allowed; box-shadow: none; transform: none; }
+
+/* ─── Stats strip ─────────────────────────────────────────────────────── */
+.lp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 16px var(--pad) 0; flex: none; }
+.lp-stat { display: flex; align-items: center; gap: 13px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
+.lp-ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex: none; background: var(--amber-tint); color: var(--amber); }
+.lp-ic svg { width: 19px; height: 19px; }
+.lp-stat-label { font-size: 12px; color: var(--stone); }
+.lp-stat-val { font-family: var(--serif); font-weight: 500; font-size: 27px; letter-spacing: -0.02em; line-height: 1.1; }
+.lp-stat-val .u { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--stone); margin-left: 6px; }
+.lp-stat--accent { background: var(--terra); border-color: var(--terra); color: #fff; }
+.lp-stat--accent .lp-stat-label { color: rgba(255, 255, 255, 0.82); }
+.lp-stat--accent .lp-ic { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.lp-stat--accent .lp-stat-val .u { color: rgba(255, 255, 255, 0.8); }
+@media (max-width: 720px) { .lp-stats { grid-template-columns: 1fr; } }
+
+/* ─── Horizontal dashboard ────────────────────────────────────────────── */
+.lp-dash { display: grid; gap: 14px; padding: 14px var(--pad) var(--pad); align-items: stretch; }
+.lp-dash.cols-3 { grid-template-columns: 1.05fr 0.8fr 1.15fr; }
+.lp-dash.cols-2 { grid-template-columns: 0.9fr 1.1fr; }
+@media (max-width: 1040px) { .lp-dash.cols-2, .lp-dash.cols-3 { grid-template-columns: 1fr; } }
+
+.lp-panel { display: flex; flex-direction: column; background: var(--paper); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; }
+.lp-panel-head { padding: 20px 22px 0; flex: none; }
+.lp-panel-body { padding: 16px 22px; flex: 1; }
+.lp-panel-foot { padding: 0 22px 20px; flex: none; }
+.lp-card-h { font-family: var(--serif); font-weight: 500; font-size: 22px; letter-spacing: -0.01em; margin: 0 0 3px; }
+.lp-card-sub { font-size: 13px; color: var(--stone); margin: 0; line-height: 1.5; }
+
+/* ─── Form ────────────────────────────────────────────────────────────── */
+.lp-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.lp-label { font-size: 12.5px; font-weight: 600; color: var(--stone); }
+.lp-input-wrap { position: relative; display: flex; align-items: center; }
+.lp-input, .lp-textarea { width: 100%; font-family: var(--sans); font-size: 16px; color: var(--charcoal); background: var(--cream); border: 1px solid var(--line-strong); border-radius: 12px; padding: 12px 14px; outline: none; transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease; }
+.lp-textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+.lp-input:focus, .lp-textarea:focus { border-color: var(--terra); background: var(--paper); box-shadow: 0 0 0 3px var(--terra-tint); }
+.lp-input::placeholder, .lp-textarea::placeholder { color: #b3a89a; }
+.lp-suffix { position: absolute; right: 14px; font-weight: 600; color: var(--stone); font-size: 14px; pointer-events: none; }
+.lp-input.has-suffix { padding-right: 52px; }
+.lp-counter { align-self: flex-end; font-size: 11.5px; color: var(--stone); font-family: var(--mono); }
+.lp-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.lp-chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--stone); background: var(--sand); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; }
+.lp-chip svg { width: 13px; height: 13px; color: var(--amber); }
+.lp-status { margin: 10px 0 0; font-size: 13px; color: var(--stone); border-left: 2px solid var(--amber); padding: 6px 10px; background: var(--amber-tint); border-radius: 8px; }
+
+/* ─── Owner panel ─────────────────────────────────────────────────────── */
+.lp-owner-bal { font-family: var(--serif); font-weight: 500; font-size: 38px; color: var(--terra); letter-spacing: -0.02em; line-height: 1; margin: 6px 0 2px; }
+.lp-owner-bal .u { font-family: var(--sans); font-size: 15px; color: var(--stone); font-weight: 600; margin-left: 6px; }
+.lp-owner-note { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--stone); background: var(--amber-tint); border-radius: 8px; padding: 8px 11px; margin-top: 16px; }
+.lp-owner-note svg { width: 14px; height: 14px; color: var(--amber); flex: none; }
+
+/* ─── Recent activity ─────────────────────────────────────────────────── */
+.lp-feed-body { padding-top: 8px; }
+.lp-feed { display: flex; flex-direction: column; }
+.lp-feed-row { display: flex; align-items: center; gap: 13px; padding: 12px 0; border-top: 1px solid var(--line); }
+.lp-feed-row:first-child { border-top: 0; }
+.lp-av { width: 36px; height: 36px; border-radius: 50%; flex: none; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 12px; }
+.lp-feed-main { flex: 1; min-width: 0; }
+.lp-feed-who { font-family: var(--mono); font-size: 13px; }
+.lp-feed-msg { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--stone); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp-feed-right { text-align: right; flex: none; }
+.lp-feed-amt { font-weight: 700; color: var(--terra); font-size: 15px; }
+.lp-feed-time { font-size: 11.5px; color: var(--stone); margin-top: 2px; }
+.lp-empty { color: var(--stone); font-size: 14px; text-align: center; padding: 24px 0; }
+.lp-empty-state { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 30px 0; gap: 4px; }
+.lp-empty-ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--amber-tint); color: var(--amber); margin-bottom: 8px; }
+.lp-empty-ic svg { width: 22px; height: 22px; }
+.lp-empty-h { font-family: var(--serif); font-size: 18px; margin: 0; }
+.lp-empty-sub { font-size: 13px; color: var(--stone); margin: 0; }
+
+/* ─── Reduced motion ──────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; } }

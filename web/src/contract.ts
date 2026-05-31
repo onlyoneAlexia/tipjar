@@ -1,10 +1,12 @@
 import type { Address } from 'viem';
 
-// Paste the deployed address from `forge script ... --broadcast` here, or set VITE_TIPJAR_ADDRESS in .env.
+// Override with VITE_TIPJAR_ADDRESS (.env / Vercel env). Falls back to the
+// live Base Sepolia deployment so the app works out-of-the-box on deploy.
+const DEPLOYED_TIPJAR = '0x2b7aD12C066181c354a615A3c6ce1edAf4c6Ef33';
 const envAddr = import.meta.env.VITE_TIPJAR_ADDRESS;
 export const TIPJAR_ADDRESS = (typeof envAddr === 'string' && /^0x[a-fA-F0-9]{40}$/.test(envAddr)
   ? envAddr
-  : '0x0000000000000000000000000000000000000000') as Address;
+  : DEPLOYED_TIPJAR) as Address;
 
 export const TIPJAR_ABI = [
   {

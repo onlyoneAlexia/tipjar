@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import {
   useAccount,
@@ -32,11 +32,90 @@ function totalEth(tips: readonly RecentTip[]) {
   return formatEther(sum);
 }
 
+/** Honour the user's OS-level motion preference (subscribes via the platform store, no effect-setState). */
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+function useReducedMotion() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+      mq.addEventListener('change', onChange);
+      return () => mq.removeEventListener('change', onChange);
+    },
+    () => window.matchMedia(REDUCED_MOTION_QUERY).matches,
+    () => false,
+  );
+}
+
+/** Counts up to `value` on change with an ease-out curve; jumps instantly when motion is reduced. */
+function AnimatedNumber({ value, decimals = 0 }: { value: number; decimals?: number }) {
+  const reduced = useReducedMotion();
+  const [display, setDisplay] = useState(value);
+  const currentRef = useRef(value);
+
+  useEffect(() => {
+    if (reduced) {
+      currentRef.current = value; // render `value` directly below; nothing to animate
+      return;
+    }
+    const from = currentRef.current;
+    const to = value;
+    if (Math.abs(from - to) < 1e-9) return;
+
+    let raf = 0;
+    const start = performance.now();
+    const duration = 700;
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      const v = from + (to - from) * eased;
+      currentRef.current = v;
+      setDisplay(v);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, reduced]);
+
+  const shown = reduced ? value : display;
+  return (
+    <>{shown.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg className="spinner" width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** A short, celebratory coin shower for the rare moment a tip confirms on-chain. */
+function CoinBurst() {
+  return (
+    <div className="burst" aria-hidden="true">
+      {Array.from({ length: 9 }).map((_, i) => (
+        <span
+          key={i}
+          className="coin"
+          style={{
+            left: `${10 + (i * 80) / 8}%`,
+            animationDelay: `${i * 55}ms`,
+            ['--s' as string]: `${10 + (i % 3) * 5}px`,
+          } as React.CSSProperties}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function App() {
   const { address, isConnected } = useAccount();
   const [amount, setAmount] = useState('0.001');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState<string | null>(null);
+  const [showBurst, setShowBurst] = useState(false);
 
   const addressConfigured = TIPJAR_ADDRESS !== '0x0000000000000000000000000000000000000000';
 
@@ -80,15 +159,26 @@ export default function App() {
   const { writeContractAsync, data: txHash, isPending, reset } = useWriteContract();
   const { isLoading: confirming, isSuccess: confirmed } = useWaitForTransactionReceipt({ hash: txHash });
 
+  /* eslint-disable react-hooks/set-state-in-effect --
+     Reflecting an external async result (the on-chain tx receipt from
+     useWaitForTransactionReceipt) into UI state: the documented "subscribe to
+     an external system" case. One-shot side effects (status, confetti, refetch,
+     timers) have no render-time derivation. */
   useEffect(() => {
     if (confirmed) {
       setStatus('Tip sent ✓');
       setMessage('');
+      setShowBurst(true);
       void refetchTips();
-      const t = setTimeout(() => reset(), 1500);
-      return () => clearTimeout(t);
+      const resetTimer = setTimeout(() => reset(), 1500);
+      const burstTimer = setTimeout(() => setShowBurst(false), 1300);
+      return () => {
+        clearTimeout(resetTimer);
+        clearTimeout(burstTimer);
+      };
     }
   }, [confirmed, refetchTips, reset]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useWatchContractEvent({
     address: TIPJAR_ADDRESS,
@@ -158,20 +248,24 @@ export default function App() {
         <div className="stat">
           <div className="stat-label">Tips received</div>
           <div className="stat-value">
-            {addressConfigured ? (tipCount?.toString() ?? '—') : '—'}
+            {addressConfigured && tipCount !== undefined ? (
+              <AnimatedNumber value={Number(tipCount)} />
+            ) : (
+              '—'
+            )}
           </div>
         </div>
         <div className="stat">
           <div className="stat-label">Jar balance</div>
           <div className="stat-value">
-            {jarBalance ? formatEther(jarBalance.value) : '—'}
+            {jarBalance ? <AnimatedNumber value={Number(formatEther(jarBalance.value))} decimals={4} /> : '—'}
             <span className="unit">ETH</span>
           </div>
         </div>
         <div className="stat">
           <div className="stat-label">Last 10 total</div>
           <div className="stat-value">
-            {totalEth(tips)}
+            <AnimatedNumber value={Number(totalEth(tips))} decimals={4} />
             <span className="unit">ETH</span>
           </div>
         </div>
@@ -207,7 +301,9 @@ export default function App() {
             <button
               type="submit"
               className="btn btn-primary"
+              data-loading={isPending || confirming ? 'true' : undefined}
               disabled={!isConnected || isPending || confirming || !addressConfigured}>
+              {(isPending || confirming) && <Spinner />}
               {!isConnected
                 ? 'Connect wallet to tip'
                 : isPending
@@ -216,8 +312,12 @@ export default function App() {
                     ? 'Mining on Base Sepolia…'
                     : 'Send tip →'}
             </button>
-            {status && <p className="status">{status}</p>}
+            {status && (
+              <p className={`status${status.startsWith('Tip sent') ? ' status-success' : ''}`}>{status}</p>
+            )}
           </form>
+
+          {showBurst && <CoinBurst />}
 
           {isConnected && isOwner && (
             <div className="owner-panel">
@@ -240,7 +340,10 @@ export default function App() {
           ) : (
             <ul className="feed">
               {tips.map((t, i) => (
-                <li key={`${t.timestamp}-${i}`} className="tip-row">
+                <li
+                  key={`${t.timestamp}-${i}`}
+                  className="tip-row"
+                  style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}>
                   <div className="tip-head">
                     <span className="tip-amount">{formatEther(t.amount)} ETH</span>
                     <span className="tip-time">{formatTime(t.timestamp)}</span>
